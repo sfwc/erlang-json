@@ -8,6 +8,8 @@
 encode_test_() ->
   [?_assertEqual("1", encode(1))
   ,?_assertEqual("1.00000000000000000000e+00", encode(1.0))
+  ,?_assertEqual("true", encode(true))
+  ,?_assertEqual("false", encode(false))
   ,?_assertEqual("\"foo\"", encode(foo))
   ,?_assertEqual("\"foo\"", encode(<<"foo">>))
   ,?_assertEqual("[102,111,111]", encode("foo"))
@@ -25,6 +27,7 @@ decode_test_() ->
   ,?_assertEqual(1, decode("   1   "))
   ,?_assertEqual(1.1, decode("1.1"))
   ,?_assertEqual(true, decode("true"))
+  ,?_assertEqual(false, decode("false"))
   ,?_assertEqual(<<"foo">>, decode("\"foo\""))
   ,?_assertEqual([1, 2], decode("[1, 2]"))
   ,?_assertEqual(#{<<"a">> => 1, <<"b">> => 2}, decode("{\"a\": 1, \"b\": 2}"))

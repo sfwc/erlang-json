@@ -89,6 +89,8 @@ to_key(B) when is_binary(B) -> binary_to_list(B);
 to_key(I) when is_integer(I) -> integer_to_list(I);
 to_key(F) when is_float(F) -> float_to_list(F).
 
+encode(true) -> "true";
+encode(false) -> "false";
 encode(A) when is_atom(A) -> concat(["\"", A, "\""]);
 encode(B) when is_binary(B) -> concat(["\"", binary_to_list(B), "\""]);
 encode(I) when is_integer(I) -> integer_to_list(I);
