@@ -13,7 +13,7 @@
 % TODO: Restrict maps to actually being valid JSOs, when Dialyzer becomes
 %       capable of that.
 -type js_map() :: #{}.
--type jso() :: js_list() | js_map() | number() | binary() | boolean().
+-type jso() :: js_list() | js_map() | number() | binary() | boolean() | null.
 -type result(A) :: {A, input()}.
 -type state() :: any().
 
@@ -38,11 +38,12 @@ parse_string([$" | Rest], Acc) -> {list_to_binary(reverse(Acc)), Rest};
 parse_string([$\\, Char | Rest], Acc) -> parse_string(Rest, [Char | Acc]);
 parse_string([Char | Rest], Acc) -> parse_string(Rest, [Char | Acc]).
 
--spec translate(state()) -> number() | boolean().
+-spec translate(state()) -> number() | boolean() | null.
 translate(Acc) ->
   case reverse(Acc) of
     "true" -> true;
     "false" -> false;
+    "null" -> null;
     Number ->
       case lists:member($., Number) of
         true -> list_to_float(Number);
@@ -93,6 +94,7 @@ to_key(F) when is_float(F) -> float_to_list(F).
 -spec encode(jso() | atom()) -> nonempty_string().
 encode(true) -> "true";
 encode(false) -> "false";
+encode(null) -> "null";
 encode(A) when is_atom(A) -> concat(["\"", A, "\""]);
 encode(B) when is_binary(B) -> concat(["\"", binary_to_list(B), "\""]);
 encode(I) when is_integer(I) -> integer_to_list(I);
