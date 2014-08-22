@@ -1,0 +1,6 @@
+{application, json, [
+  {description, "JSON codec using EEP43 maps"},
+  {vsn, "0.0.1"},
+  {registered, [json]},
+  {applications, [kernel, stdlib]}
+]}.

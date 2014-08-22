@@ -1,0 +1,3 @@
+A JSON codec that uses EEP43 maps for the 'object' type.
+
+No attempt at good performance has yet been made.
