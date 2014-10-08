@@ -4,6 +4,9 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
+% TODO: Refactor as a list of encoded/decoded pairs, testing both directions
+%       for each pair.
+% FIXME: Missing tests for most string escape sequences.
 
 encode_test_() ->
   [?_assertEqual("1", encode(1))
@@ -13,6 +16,10 @@ encode_test_() ->
   ,?_assertEqual("null", encode(null))
   ,?_assertEqual("\"foo\"", encode(foo))
   ,?_assertEqual("\"foo\"", encode(<<"foo">>))
+  ,?_assertEqual("\"put \\\"foo\\\" in quotes\"",
+                 encode('put "foo" in quotes'))
+  ,?_assertEqual("\"put \\\"foo\\\" in quotes\"",
+                 encode(<<"put \"foo\" in quotes">>))
   ,?_assertEqual("[102,111,111]", encode("foo"))
   ,?_assertEqual("{}", encode(#{}))
   ,?_assertEqual("{\"a\":1}", encode(#{a => 1}))
@@ -31,6 +38,8 @@ decode_test_() ->
   ,?_assertEqual(false, decode("false"))
   ,?_assertEqual(null, decode("null"))
   ,?_assertEqual(<<"foo">>, decode("\"foo\""))
+  ,?_assertEqual(<<"put \"foo\" in quotes">>,
+                 decode("\"put \\\"foo\\\" in quotes\""))
   ,?_assertEqual([1, 2], decode("[1, 2]"))
   ,?_assertEqual(#{<<"a">> => 1, <<"b">> => 2}, decode("{\"a\": 1, \"b\": 2}"))
   ].

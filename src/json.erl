@@ -35,7 +35,17 @@ parse_map(Input, Acc) ->
 
 -spec parse_string(input(), state()) -> result(binary()).
 parse_string([$" | Rest], Acc) -> {list_to_binary(reverse(Acc)), Rest};
-parse_string([$\\, Char | Rest], Acc) -> parse_string(Rest, [Char | Acc]);
+parse_string([$\\, $u, X0, X1, X2, X3 | Rest], Acc) ->
+  parse_string(Rest, [list_to_integer([X0, X1, X2, X3], 16) | Acc]);
+parse_string([$\\, Char | Rest], Acc) ->
+  parse_string(Rest, [case Char of
+                        $b -> $\b;
+                        $f -> $\f;
+                        $n -> $\n;
+                        $r -> $\r;
+                        $t -> $\t;
+                        C -> C
+                      end | Acc]);
 parse_string([Char | Rest], Acc) -> parse_string(Rest, [Char | Acc]).
 
 -spec translate(state()) -> number() | boolean() | null.
@@ -65,14 +75,14 @@ parse("{" ++ Input) -> parse_map(Input, #{});
 parse("\"" ++ Input) -> parse_string(Input, "");
 parse(Input) -> parse_token(Input, "").
 
--spec normalizeString(input()) -> input().
-normalizeString([$" | R]) -> [$" | normalize(R)];
-normalizeString([$\\, C | R]) -> [$\\, C | normalizeString(R)];
-normalizeString([C | R]) -> [C | normalizeString(R)].
+-spec preserveString(input()) -> input().
+preserveString([$" | R]) -> [$" | normalize(R)];
+preserveString("\\\"" ++ R) -> "\\\"" ++ preserveString(R);
+preserveString([C | R]) -> [C | preserveString(R)].
 
 -spec normalize(input()) -> input().
 normalize("") -> "";
-normalize([$" | R]) -> [$" | normalizeString(R)];
+normalize([$" | R]) -> [$" | preserveString(R)];
 normalize([W | R]) when W == $ ; W == $\t; W == $\n; W == $\r -> normalize(R);
 normalize([C | R]) -> [C | normalize(R)].
 
@@ -91,12 +101,29 @@ to_key(B) when is_binary(B) -> binary_to_list(B);
 to_key(I) when is_integer(I) -> integer_to_list(I);
 to_key(F) when is_float(F) -> float_to_list(F).
 
+-spec escape(string()) -> string().
+escape("") -> "";
+escape([C | S]) ->
+  (case C of
+     $" -> "\\\"";
+     $\\ -> "\\\\";
+     % Why does RFC4627 have an escape code for '/' here?
+     $\b -> "\\\b";
+     $\f -> "\\\f";
+     $\n -> "\\\n";
+     $\r -> "\\\r";
+     $\t -> "\\\t";
+     ControlChar when ControlChar =< 16#1f ->
+       [$u | string:right(integer_to_list(ControlChar, 16), 4, $0)];
+     _ -> [C]
+   end) ++ escape(S).
+
 -spec encode(jso() | atom()) -> nonempty_string().
 encode(true) -> "true";
 encode(false) -> "false";
 encode(null) -> "null";
-encode(A) when is_atom(A) -> concat(["\"", A, "\""]);
-encode(B) when is_binary(B) -> concat(["\"", binary_to_list(B), "\""]);
+encode(A) when is_atom(A) -> concat(["\"", escape(atom_to_list(A)), "\""]);
+encode(B) when is_binary(B) -> concat(["\"", escape(binary_to_list(B)), "\""]);
 encode(I) when is_integer(I) -> integer_to_list(I);
 encode(F) when is_float(F) -> float_to_list(F);
 encode(L) when is_list(L) ->
