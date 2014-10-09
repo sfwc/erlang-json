@@ -108,11 +108,11 @@ escape([C | S]) ->
      $" -> "\\\"";
      $\\ -> "\\\\";
      % Why does RFC4627 have an escape code for '/' here?
-     $\b -> "\\\b";
-     $\f -> "\\\f";
-     $\n -> "\\\n";
-     $\r -> "\\\r";
-     $\t -> "\\\t";
+     $\b -> "\\b";
+     $\f -> "\\f";
+     $\n -> "\\n";
+     $\r -> "\\r";
+     $\t -> "\\t";
      ControlChar when ControlChar =< 16#1f ->
        [$u | string:right(integer_to_list(ControlChar, 16), 4, $0)];
      _ -> [C]

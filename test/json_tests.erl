@@ -16,6 +16,7 @@ encode_test_() ->
   ,?_assertEqual("null", encode(null))
   ,?_assertEqual("\"foo\"", encode(foo))
   ,?_assertEqual("\"foo\"", encode(<<"foo">>))
+  ,?_assertEqual("\"foo\\nbar\"", encode(<<"foo\nbar">>))
   ,?_assertEqual("\"put \\\"foo\\\" in quotes\"",
                  encode('put "foo" in quotes'))
   ,?_assertEqual("\"put \\\"foo\\\" in quotes\"",
@@ -38,6 +39,7 @@ decode_test_() ->
   ,?_assertEqual(false, decode("false"))
   ,?_assertEqual(null, decode("null"))
   ,?_assertEqual(<<"foo">>, decode("\"foo\""))
+  ,?_assertEqual(<<"foo\nbar">>, decode("\"foo\\nbar\""))
   ,?_assertEqual(<<"put \"foo\" in quotes">>,
                  decode("\"put \\\"foo\\\" in quotes\""))
   ,?_assertEqual([1, 2], decode("[1, 2]"))
